@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lembrete</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            color: white;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .card-title {
+            font-size: 20px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .card-description {
+            font-size: 16px;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .date-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+        }
+        .footer-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 Lembrete Importante</h1>
+        </div>
+        <div class="content">
+            <p class="greeting">Olá, <strong>{{RecipientName}}</strong>!</p>
+            <p style="color: #666; font-size: 16px; line-height: 1.6;">
+                Este é um lembrete automático sobre uma tarefa importante que requer sua atenção.
+            </p>
+            <div class="card">
+                <div class="card-title">{{Title}}</div>
+                <div class="card-description">{{Description}}</div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <span class="date-badge">📅 Vencimento: {{DueDate}}</span>
+                </div>
+            </div>
+            <p style="color: #666; font-size: 14px; margin-top: 30px;">
+                Por favor, não deixe de verificar e tomar as ações necessárias dentro do prazo.
+            </p>
+        </div>
+        <div class="footer">
+            <div class="footer-icon">⚙️</div>
+            <p>Este é um e-mail automático gerado pelo <strong>Reminder Service</strong></p>
+            <p>Não responda a este e-mail</p>
+        </div>
+    </div>
+</body>
+</html>
