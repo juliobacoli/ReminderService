@@ -89,4 +89,21 @@ public class TemplateServiceTests
         result.Should().Contain(description);
         result.Should().Contain(expectedDate);
     }
+
+    [Fact]
+    public void Constructor_QuandoTemplateExiste_LogaSucesso()
+    {
+        // Arrange & Act
+        var service = new TemplateService(_loggerMock.Object);
+
+        // Assert
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("carregado com sucesso")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
 }
