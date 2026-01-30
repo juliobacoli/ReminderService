@@ -1,0 +1,7 @@
+coverage:
+  ignore:
+    - "**/Program.cs"
+    - "**/SeedData.cs"
+    - "**/TestHelper.cs"
+    - "**/Worker.cs"
+    - "**/Migrations/**"
