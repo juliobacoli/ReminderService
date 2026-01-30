@@ -16,16 +16,18 @@ public class ReminderRepository : IReminderRepository
 
     public async Task<List<Reminder>> GetPendingRemindersAsync(DateTime currentDate)
     {
-        return await _context.Reminders
+        var allReminders = await _context.Reminders
             .AsNoTracking()
             .Include(r => r.ReminderRecipients)
             .ThenInclude(rr => rr.Recipient)
+            .Where(r => r.DueDate.Date >= currentDate.Date)
+            .ToListAsync();
+
+        return allReminders
             .Where(r =>
-                r.DueDate.Date >= currentDate.Date &&
                 r.ReminderRecipients.Any(rr => rr.Recipient.IsActive) &&
                 (r.LastSentAt == null || (currentDate - r.LastSentAt.Value).TotalDays >= r.IntervalDays)
-            )
-            .ToListAsync();
+            ).ToList();
     }
 
     public async Task ResetReminderRecipientsStatusAsync(int reminderId)

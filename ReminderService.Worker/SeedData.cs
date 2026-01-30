@@ -15,10 +15,10 @@ public static class SeedData
 
         var recipients = new List<Recipient>
         {
-            new Recipient { Name = "Julio", Email = "juli-microlins@hotmail.com", IsActive = true },
+            new Recipient { Name = "Julio", Email = "julio-microlins@hotmail.com", IsActive = true },
             new Recipient { Name = "Ivan", Email = "ivanpicanha@hotmail.com", IsActive = true },
             new Recipient { Name = "Eliene", Email = "elienerochasantana@gmail.com", IsActive = true },
-            new Recipient { Name = "Bianca", Email = "bia.maced@hotmail.com", IsActive = true }
+            new Recipient { Name = "Bianca", Email = "bianca.macedo70@outlook.com", IsActive = true }
         };
 
         await context.Recipients.AddRangeAsync(recipients);
@@ -26,9 +26,13 @@ public static class SeedData
 
         var reminder = new Reminder
         {
-            Title = "Renovação Porto Seguro",
-            Description = "Lembrete para renovação do seguro Porto Seguro. Verificar condições, coberturas e realizar o pagamento dentro do prazo.",
-            DueDate = DateTime.Now.AddDays(65),
+            Title = "FÉRIAS Porto Seguro",
+            Description = "Lembrete para as FÉRIAS Porto Seguro.<br><br>" +
+                  "• Verificar passagens<br>" +
+                  "• Pesquisar passeios<br>" +
+                  "• Fazer reserva de carro com antecedência<br><br>" +
+                  "Este lembrete será enviado automaticamente a cada 65 dias.",
+            DueDate = new DateTime(2026, 12, 1),
             IntervalDays = 65,
             LastSentAt = null,
             Priority = ReminderPriority.Normal

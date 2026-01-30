@@ -34,6 +34,18 @@ try
     builder.Services.AddHostedService<Worker>();
 
     var host = builder.Build();
+
+    // Modo de teste: preparar banco para envio imediato
+    if (args.Contains("--prepare-test"))
+    {
+        Log.Information(" Modo de teste ativado - preparando banco de dados...");
+        using var scope = host.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await TestHelper.PrepareForImmediateTestAsync(context);
+        Log.Information(" Banco preparado! Execute sem --prepare-test para enviar e-mails");
+        return;
+    }
+
     host.Run();
 }
 catch (Exception ex)
