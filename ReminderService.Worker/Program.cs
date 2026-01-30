@@ -17,6 +17,8 @@ try
 
     var builder = Host.CreateApplicationBuilder(args);
 
+    builder.Services.AddWindowsService();
+
     builder.Services.AddSerilog();
 
     builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
