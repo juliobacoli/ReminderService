@@ -11,6 +11,7 @@ public class Reminder
     public int IntervalDays { get; set; }
     public DateTime? LastSentAt { get; set; }
     public ReminderPriority Priority { get; set; } = ReminderPriority.Normal;
+    public bool IsActive { get; set; } = true;
 
     public ICollection<ReminderRecipient> ReminderRecipients { get; set; } = new List<ReminderRecipient>();
 }

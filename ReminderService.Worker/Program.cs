@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ReminderService.Worker;
 using ReminderService.Worker.Data;
+using ReminderService.Worker.Endpoints;
 using ReminderService.Worker.Repositories;
 using ReminderService.Worker.Services;
 using Serilog;
@@ -15,7 +16,7 @@ try
 {
     Log.Information("Iniciando ReminderService Worker");
 
-    var builder = Host.CreateApplicationBuilder(args);
+    var builder = WebApplication.CreateBuilder(args);
 
     builder.Services.AddWindowsService();
 
@@ -35,20 +36,27 @@ try
 
     builder.Services.AddHostedService<Worker>();
 
-    var host = builder.Build();
+    var app = builder.Build();
 
     // Modo de teste: preparar banco para envio imediato
     if (args.Contains("--prepare-test"))
     {
         Log.Information(" Modo de teste ativado - preparando banco de dados...");
-        using var scope = host.Services.CreateScope();
+        using var scope = app.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await TestHelper.PrepareForImmediateTestAsync(context);
         Log.Information(" Banco preparado! Execute sem --prepare-test para enviar e-mails");
         return;
     }
 
-    host.Run();
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+
+    app.MapReminderEndpoints();
+    app.MapRecipientEndpoints();
+    app.MapDashboardEndpoints();
+
+    app.Run();
 }
 catch (Exception ex)
 {
