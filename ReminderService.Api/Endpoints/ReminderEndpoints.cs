@@ -2,7 +2,7 @@ using ReminderService.Worker.Entities;
 using ReminderService.Worker.Enums;
 using ReminderService.Worker.Repositories;
 
-namespace ReminderService.Worker.Endpoints;
+namespace ReminderService.Api.Endpoints;
 
 public static class ReminderEndpoints
 {

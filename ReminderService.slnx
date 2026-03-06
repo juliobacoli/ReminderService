@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="ReminderService.Api/ReminderService.Api.csproj" />
   <Project Path="ReminderService.Worker.Tests/ReminderService.Worker.Tests.csproj" />
   <Project Path="ReminderService.Worker/ReminderService.Worker.csproj" />
 </Solution>

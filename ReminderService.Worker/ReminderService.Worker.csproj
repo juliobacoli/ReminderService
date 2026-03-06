@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -7,7 +7,6 @@
     <UserSecretsId>dotnet-ReminderService.Worker-0f7c5374-61b6-41ba-87a3-d90076bbb3e9</UserSecretsId>
     <PublishTrimmed>false</PublishTrimmed>
     <InvariantGlobalization>false</InvariantGlobalization>
-    <SelfContained>true</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>
