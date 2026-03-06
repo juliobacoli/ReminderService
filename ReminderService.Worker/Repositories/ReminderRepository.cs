@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ReminderService.Worker.Data;
 using ReminderService.Worker.Entities;
 using ReminderService.Worker.Enums;
+using ReminderService.Worker.Services;
 
 namespace ReminderService.Worker.Repositories;
 
@@ -14,7 +15,7 @@ public class ReminderRepository : IReminderRepository
         _context = context;
     }
 
-    public async Task<List<Reminder>> GetPendingRemindersAsync(DateTime currentDate)
+    public async Task<List<Reminder>> GetPendingRemindersAsync(DateTime currentDate, IIntervalCalculator intervalCalculator)
     {
         var allReminders = await _context.Reminders
             .AsNoTracking()
@@ -25,9 +26,13 @@ public class ReminderRepository : IReminderRepository
 
         return allReminders
             .Where(r =>
-                r.ReminderRecipients.Any(rr => rr.Recipient.IsActive) &&
-                (r.LastSentAt == null || (currentDate - r.LastSentAt.Value).TotalDays >= r.IntervalDays)
-            ).ToList();
+            {
+                if (!r.ReminderRecipients.Any(rr => rr.Recipient.IsActive))
+                    return false;
+
+                var interval = intervalCalculator.CalculateInterval(r.DueDate, currentDate, r.IntervalDays);
+                return r.LastSentAt == null || (currentDate - r.LastSentAt.Value).TotalDays >= interval;
+            }).ToList();
     }
 
     public async Task ResetReminderRecipientsStatusAsync(int reminderId)

@@ -31,6 +31,7 @@ try
     builder.Services.AddScoped<IReminderRepository, ReminderRepository>();
     builder.Services.AddScoped<IEmailService, EmailService>();
     builder.Services.AddScoped<ITemplateService, TemplateService>();
+    builder.Services.AddSingleton<IIntervalCalculator, IntervalCalculator>();
     builder.Services.AddScoped<IReminderProcessingService, ReminderProcessingService>();
 
     builder.Services.AddHostedService<Worker>();

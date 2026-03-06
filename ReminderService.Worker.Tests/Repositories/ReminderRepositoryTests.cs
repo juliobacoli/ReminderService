@@ -2,6 +2,7 @@ using FluentAssertions;
 using ReminderService.Worker.Entities;
 using ReminderService.Worker.Enums;
 using ReminderService.Worker.Repositories;
+using ReminderService.Worker.Services;
 using ReminderService.Worker.Tests.Helpers;
 
 namespace ReminderService.Worker.Tests.Repositories;
@@ -10,11 +11,13 @@ public class ReminderRepositoryTests : IDisposable
 {
     private readonly Data.AppDbContext _context;
     private readonly ReminderRepository _repository;
+    private readonly IIntervalCalculator _intervalCalculator;
 
     public ReminderRepositoryTests()
     {
         _context = TestDbContextFactory.CreateInMemoryContext(Guid.NewGuid().ToString());
         _repository = new ReminderRepository(_context);
+        _intervalCalculator = new IntervalCalculator();
     }
 
     public void Dispose()
@@ -50,7 +53,7 @@ public class ReminderRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetPendingRemindersAsync(DateTime.Now);
+        var result = await _repository.GetPendingRemindersAsync(DateTime.Now, _intervalCalculator);
 
         // Assert
         result.Should().HaveCount(1);
@@ -66,9 +69,9 @@ public class ReminderRepositoryTests : IDisposable
         {
             Title = "Test",
             Description = "Desc",
-            DueDate = DateTime.Now.AddDays(100),
+            DueDate = DateTime.Now.AddDays(200),
             IntervalDays = 65,
-            LastSentAt = DateTime.Now.AddDays(-30) // Enviado há 30 dias (precisa 65)
+            LastSentAt = DateTime.Now.AddDays(-30) // Enviado há 30 dias (precisa 65 com >180 dias até DueDate)
         };
 
         _context.Recipients.Add(recipient);
@@ -84,7 +87,7 @@ public class ReminderRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetPendingRemindersAsync(DateTime.Now);
+        var result = await _repository.GetPendingRemindersAsync(DateTime.Now, _intervalCalculator);
 
         // Assert
         result.Should().BeEmpty();
@@ -117,7 +120,7 @@ public class ReminderRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetPendingRemindersAsync(DateTime.Now);
+        var result = await _repository.GetPendingRemindersAsync(DateTime.Now, _intervalCalculator);
 
         // Assert
         result.Should().HaveCount(1);
@@ -149,7 +152,7 @@ public class ReminderRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetPendingRemindersAsync(DateTime.Now);
+        var result = await _repository.GetPendingRemindersAsync(DateTime.Now, _intervalCalculator);
 
         // Assert
         result.Should().HaveCount(1);
@@ -183,7 +186,7 @@ public class ReminderRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetPendingRemindersAsync(DateTime.Now);
+        var result = await _repository.GetPendingRemindersAsync(DateTime.Now, _intervalCalculator);
 
         // Assert
         result.Should().BeEmpty();
