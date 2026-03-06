@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReminderService - Painel</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; padding: 20px; }
+        h1 { text-align: center; margin-bottom: 10px; color: #444; }
+        .stats { display: flex; gap: 12px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap; }
+        .stat { background: white; border-radius: 8px; padding: 16px 24px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.1); min-width: 140px; }
+        .stat .number { font-size: 28px; font-weight: bold; color: #667eea; }
+        .stat .label { font-size: 12px; color: #888; margin-top: 4px; }
+        .section { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        .section h2 { margin-bottom: 16px; color: #555; font-size: 18px; border-bottom: 2px solid #667eea; padding-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+        th { background: #f8f9fa; color: #666; font-weight: 600; }
+        .badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-active { background: #d4edda; color: #155724; }
+        .badge-inactive { background: #f8d7da; color: #721c24; }
+        .badge-sent { background: #d4edda; color: #155724; }
+        .badge-failed { background: #f8d7da; color: #721c24; }
+        .badge-pending { background: #fff3cd; color: #856404; }
+        .btn { padding: 6px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; }
+        .btn-toggle { background: #667eea; color: white; }
+        .btn-toggle:hover { background: #5a6fd6; }
+        .btn-submit { background: #28a745; color: white; padding: 8px 20px; font-size: 14px; }
+        .btn-submit:hover { background: #218838; }
+        .form-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+        .form-row input, .form-row select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .form-row input { flex: 1; min-width: 150px; }
+        .form-row select { min-width: 120px; }
+        .days-warn { color: #dc3545; font-weight: 600; }
+        .days-ok { color: #28a745; }
+        #toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 12px 20px; border-radius: 8px; display: none; z-index: 100; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <h1>ReminderService</h1>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="section">
+        <h2>Lembretes</h2>
+        <div id="reminders-table"></div>
+        <details style="margin-top: 16px;">
+            <summary style="cursor: pointer; color: #667eea; font-weight: 600;">Novo lembrete</summary>
+            <form id="reminder-form" style="margin-top: 12px;">
+                <div class="form-row">
+                    <input name="title" placeholder="Titulo" required>
+                    <input name="dueDate" type="date" required>
+                    <input name="intervalDays" type="number" placeholder="Intervalo (dias)" value="65" required>
+                    <select name="priority">
+                        <option value="0">Normal</option>
+                        <option value="1">Alta</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <input name="description" placeholder="Descricao" style="flex: 3;">
+                </div>
+                <div class="form-row">
+                    <select name="recipientIds" id="recipient-select" multiple style="flex: 2; min-height: 60px;"></select>
+                    <button type="submit" class="btn btn-submit">Criar lembrete</button>
+                </div>
+            </form>
+        </details>
+    </div>
+
+    <div class="section">
+        <h2>Destinatarios</h2>
+        <div id="recipients-table"></div>
+        <details style="margin-top: 16px;">
+            <summary style="cursor: pointer; color: #667eea; font-weight: 600;">Novo destinatario</summary>
+            <form id="recipient-form" style="margin-top: 12px;">
+                <div class="form-row">
+                    <input name="name" placeholder="Nome" required>
+                    <input name="email" type="email" placeholder="Email" required>
+                    <button type="submit" class="btn btn-submit">Criar destinatario</button>
+                </div>
+            </form>
+        </details>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        function toast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2500);
+        }
+
+        async function loadDashboard() {
+            const res = await fetch('/api/dashboard');
+            const data = await res.json();
+            document.getElementById('stats').innerHTML = `
+                <div class="stat"><div class="number">${data.activeReminders}</div><div class="label">Lembretes ativos</div></div>
+                <div class="stat"><div class="number">${data.expiredReminders}</div><div class="label">Expirados</div></div>
+                <div class="stat"><div class="number">${data.activeRecipients}/${data.totalRecipients}</div><div class="label">Destinatarios ativos</div></div>
+            `;
+        }
+
+        async function loadReminders() {
+            const res = await fetch('/api/reminders');
+            const data = await res.json();
+            let html = '<table><tr><th>Titulo</th><th>Data limite</th><th>Intervalo</th><th>Ultimo envio</th><th>Prioridade</th><th>Status</th><th>Destinatarios</th><th></th></tr>';
+            data.forEach(r => {
+                const daysLeft = Math.ceil((new Date(r.dueDate) - new Date()) / (1000*60*60*24));
+                const daysClass = daysLeft <= 30 ? 'days-warn' : 'days-ok';
+                html += `<tr>
+                    <td><strong>${r.title}</strong></td>
+                    <td>${r.dueDate} <span class="${daysClass}">(${daysLeft}d)</span></td>
+                    <td>${r.intervalDays} dias</td>
+                    <td>${r.lastSentAt || 'Nunca'}</td>
+                    <td>${r.priority}</td>
+                    <td><span class="badge ${r.isActive ? 'badge-active' : 'badge-inactive'}">${r.isActive ? 'Ativo' : 'Inativo'}</span></td>
+                    <td>${r.recipients.map(rc => `<span class="badge badge-${rc.status.toLowerCase()}">${rc.name}</span> `).join('')}</td>
+                    <td><button class="btn btn-toggle" onclick="toggleReminder(${r.id})">${r.isActive ? 'Desativar' : 'Ativar'}</button></td>
+                </tr>`;
+            });
+            html += '</table>';
+            document.getElementById('reminders-table').innerHTML = html;
+        }
+
+        async function loadRecipients() {
+            const res = await fetch('/api/recipients');
+            const data = await res.json();
+            let html = '<table><tr><th>Nome</th><th>Email</th><th>Status</th><th></th></tr>';
+            data.forEach(r => {
+                html += `<tr>
+                    <td>${r.name}</td>
+                    <td>${r.email}</td>
+                    <td><span class="badge ${r.isActive ? 'badge-active' : 'badge-inactive'}">${r.isActive ? 'Ativo' : 'Inativo'}</span></td>
+                    <td><button class="btn btn-toggle" onclick="toggleRecipient(${r.id})">${r.isActive ? 'Desativar' : 'Ativar'}</button></td>
+                </tr>`;
+            });
+            html += '</table>';
+            document.getElementById('recipients-table').innerHTML = html;
+
+            const select = document.getElementById('recipient-select');
+            select.innerHTML = data.filter(r => r.isActive).map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+        }
+
+        async function toggleReminder(id) {
+            await fetch(`/api/reminders/${id}/toggle`, { method: 'PUT' });
+            toast('Lembrete atualizado');
+            loadAll();
+        }
+
+        async function toggleRecipient(id) {
+            await fetch(`/api/recipients/${id}/toggle`, { method: 'PUT' });
+            toast('Destinatario atualizado');
+            loadAll();
+        }
+
+        document.getElementById('reminder-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const recipientIds = Array.from(document.getElementById('recipient-select').selectedOptions).map(o => parseInt(o.value));
+            const body = {
+                title: fd.get('title'),
+                description: fd.get('description'),
+                dueDate: fd.get('dueDate'),
+                intervalDays: parseInt(fd.get('intervalDays')),
+                priority: parseInt(fd.get('priority')),
+                recipientIds
+            };
+            await fetch('/api/reminders', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+            e.target.reset();
+            toast('Lembrete criado');
+            loadAll();
+        });
+
+        document.getElementById('recipient-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const body = { name: fd.get('name'), email: fd.get('email') };
+            await fetch('/api/recipients', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+            e.target.reset();
+            toast('Destinatario criado');
+            loadAll();
+        });
+
+        function loadAll() { loadDashboard(); loadReminders(); loadRecipients(); }
+        loadAll();
+    </script>
+</body>
+</html>
