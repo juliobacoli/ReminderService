@@ -9,17 +9,20 @@ public class ReminderProcessingService : IReminderProcessingService
     private readonly IReminderRepository _repository;
     private readonly IEmailService _emailService;
     private readonly ITemplateService _templateService;
+    private readonly IIntervalCalculator _intervalCalculator;
     private readonly ILogger<ReminderProcessingService> _logger;
 
     public ReminderProcessingService(
         IReminderRepository repository,
         IEmailService emailService,
         ITemplateService templateService,
+        IIntervalCalculator intervalCalculator,
         ILogger<ReminderProcessingService> logger)
     {
         _repository = repository;
         _emailService = emailService;
         _templateService = templateService;
+        _intervalCalculator = intervalCalculator;
         _logger = logger;
     }
 
@@ -28,7 +31,7 @@ public class ReminderProcessingService : IReminderProcessingService
         var currentDate = GetCurrentBrazilianTime();
         _logger.LogInformation("Verificando lembretes pendentes em: {CurrentDate}", currentDate);
 
-        var reminders = await _repository.GetPendingRemindersAsync(currentDate);
+        var reminders = await _repository.GetPendingRemindersAsync(currentDate, _intervalCalculator);
 
         if (reminders.Count == 0)
         {

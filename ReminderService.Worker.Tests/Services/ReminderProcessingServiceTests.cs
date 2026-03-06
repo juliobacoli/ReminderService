@@ -13,6 +13,7 @@ public class ReminderProcessingServiceTests
     private readonly Mock<IReminderRepository> _repositoryMock;
     private readonly Mock<IEmailService> _emailServiceMock;
     private readonly Mock<ITemplateService> _templateServiceMock;
+    private readonly Mock<IIntervalCalculator> _intervalCalculatorMock;
     private readonly Mock<ILogger<ReminderProcessingService>> _loggerMock;
     private readonly ReminderProcessingService _service;
 
@@ -21,12 +22,14 @@ public class ReminderProcessingServiceTests
         _repositoryMock = new Mock<IReminderRepository>();
         _emailServiceMock = new Mock<IEmailService>();
         _templateServiceMock = new Mock<ITemplateService>();
+        _intervalCalculatorMock = new Mock<IIntervalCalculator>();
         _loggerMock = new Mock<ILogger<ReminderProcessingService>>();
 
         _service = new ReminderProcessingService(
             _repositoryMock.Object,
             _emailServiceMock.Object,
             _templateServiceMock.Object,
+            _intervalCalculatorMock.Object,
             _loggerMock.Object
         );
     }
@@ -36,7 +39,7 @@ public class ReminderProcessingServiceTests
     {
         // Arrange
         _repositoryMock
-            .Setup(r => r.GetPendingRemindersAsync(It.IsAny<DateTime>()))
+            .Setup(r => r.GetPendingRemindersAsync(It.IsAny<DateTime>(), It.IsAny<IIntervalCalculator>()))
             .ReturnsAsync(new List<Reminder>());
 
         // Act
@@ -68,7 +71,7 @@ public class ReminderProcessingServiceTests
         };
 
         _repositoryMock
-            .Setup(r => r.GetPendingRemindersAsync(It.IsAny<DateTime>()))
+            .Setup(r => r.GetPendingRemindersAsync(It.IsAny<DateTime>(), It.IsAny<IIntervalCalculator>()))
             .ReturnsAsync(new List<Reminder> { reminder });
 
         _templateServiceMock
@@ -106,7 +109,7 @@ public class ReminderProcessingServiceTests
         };
 
         _repositoryMock
-            .Setup(r => r.GetPendingRemindersAsync(It.IsAny<DateTime>()))
+            .Setup(r => r.GetPendingRemindersAsync(It.IsAny<DateTime>(), It.IsAny<IIntervalCalculator>()))
             .ReturnsAsync(new List<Reminder> { reminder });
 
         _templateServiceMock
@@ -147,7 +150,7 @@ public class ReminderProcessingServiceTests
         };
 
         _repositoryMock
-            .Setup(r => r.GetPendingRemindersAsync(It.IsAny<DateTime>()))
+            .Setup(r => r.GetPendingRemindersAsync(It.IsAny<DateTime>(), It.IsAny<IIntervalCalculator>()))
             .ReturnsAsync(new List<Reminder> { reminder });
 
         _templateServiceMock
@@ -187,7 +190,7 @@ public class ReminderProcessingServiceTests
         };
 
         _repositoryMock
-            .Setup(r => r.GetPendingRemindersAsync(It.IsAny<DateTime>()))
+            .Setup(r => r.GetPendingRemindersAsync(It.IsAny<DateTime>(), It.IsAny<IIntervalCalculator>()))
             .ReturnsAsync(new List<Reminder> { reminder });
 
         _templateServiceMock
@@ -230,7 +233,7 @@ public class ReminderProcessingServiceTests
         };
 
         _repositoryMock
-            .Setup(r => r.GetPendingRemindersAsync(It.IsAny<DateTime>()))
+            .Setup(r => r.GetPendingRemindersAsync(It.IsAny<DateTime>(), It.IsAny<IIntervalCalculator>()))
             .ReturnsAsync(new List<Reminder> { reminder });
 
         _templateServiceMock
@@ -271,7 +274,7 @@ public class ReminderProcessingServiceTests
         };
 
         _repositoryMock
-            .Setup(r => r.GetPendingRemindersAsync(It.IsAny<DateTime>()))
+            .Setup(r => r.GetPendingRemindersAsync(It.IsAny<DateTime>(), It.IsAny<IIntervalCalculator>()))
             .ReturnsAsync(new List<Reminder> { reminder });
 
         _templateServiceMock
